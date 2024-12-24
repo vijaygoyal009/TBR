@@ -57,12 +57,16 @@ class CoachProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='coach_profile')
     experience = models.IntegerField()
     bio = models.TextField()
+    dob = models.DateField()  # Added dob field
 
     def __str__(self):
         return f"Coach: {self.user.name}"
 
 class UserProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='user_profile')
+    dob = models.DateField()  # Added dob field
 
     def __str__(self):
         return f"User: {self.user.name}"
+
+

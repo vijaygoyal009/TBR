@@ -3,16 +3,18 @@ from .models import CustomUser, AdminProfile, CoachProfile, UserProfile
 
 
 class UserSignupSerializer(serializers.ModelSerializer):
+    dob = serializers.DateField()
     class Meta:
         model = CustomUser
-        fields = ['name', 'email', 'mobile', 'password']
+        fields = ['name', 'email', 'mobile', 'dob', 'password']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
+        dob = validated_data.pop('dob')
         # Explicitly setting the role to 'user'
         validated_data['role'] = 'user'
         user = CustomUser.objects.create_user(**validated_data)
-        UserProfile.objects.create(user=user)
+        UserProfile.objects.create(user=user, dob=dob)
         return user
 
 
@@ -22,19 +24,21 @@ class UserSignupSerializer(serializers.ModelSerializer):
 class CoachSignupSerializer(serializers.ModelSerializer):
     experience = serializers.IntegerField()
     bio = serializers.CharField()
+    dob = serializers.DateField()
 
     class Meta:
         model = CustomUser
-        fields = ['name', 'email', 'mobile', 'password', 'experience', 'bio']
+        fields = ['name', 'email', 'mobile','dob' , 'experience', 'bio','password']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         experience = validated_data.pop('experience')
         bio = validated_data.pop('bio')
+        dob = validated_data.pop('dob')
         user = CustomUser.objects.create_user(**validated_data, role='coach')
         validated_data['role'] = 'coach'
 
-        CoachProfile.objects.create(user=user, experience=experience, bio=bio)
+        CoachProfile.objects.create(user=user, experience=experience, bio=bio , dob=dob)
         return user
 
 
