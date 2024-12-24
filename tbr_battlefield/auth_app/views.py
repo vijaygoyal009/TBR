@@ -4,7 +4,6 @@ from rest_framework import status
 from .serializers import UserSignupSerializer, CoachSignupSerializer, AdminSignupSerializer
 
 class UserSignupView(APIView):
-    # permission_classes = []
 
     def post(self, request):
         serializer = UserSignupSerializer(data=request.data)
@@ -28,3 +27,5 @@ class AdminSignupView(APIView):
             serializer.save()
             return Response({"message": "Admin registered successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+

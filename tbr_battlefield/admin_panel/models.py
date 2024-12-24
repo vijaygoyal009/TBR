@@ -13,6 +13,18 @@ class Playground(models.Model):
     
 
 
+class TimeSlot(models.Model):
+    ground = models.ForeignKey(Playground, related_name='timeslots', on_delete=models.CASCADE)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    is_available = models.BooleanField(default=True)
+    min_age = models.IntegerField()  # Minimum age for this time slot
+    max_age = models.IntegerField()  # Maximum age for this time slot
+
+    def __str__(self):
+        return f"{self.start_time} - {self.end_time} (Age: {self.min_age}-{self.max_age})"
+
+
 
 # class TimeSlot(models.Model):
 #     slot_time = models.CharField(max_length=100)
