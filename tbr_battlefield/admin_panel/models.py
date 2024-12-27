@@ -13,61 +13,32 @@ class Playground(models.Model):
     
 
 
+
 class TimeSlot(models.Model):
-    ground = models.ForeignKey(Playground, related_name='timeslots', on_delete=models.CASCADE)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    is_available = models.BooleanField(default=True)
-    min_age = models.IntegerField()  # Minimum age for this time slot
-    max_age = models.IntegerField()  # Maximum age for this time slot
+    playground = models.ForeignKey(Playground, on_delete=models.CASCADE, related_name='time_slots')
+    date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    age_group = models.CharField(max_length=20)  # Example: "6-10"
+    max_positions = models.IntegerField(default=34)  # Default number of positions
+    available_positions = models.IntegerField(default=34)  # Initially, all positions are available
+    is_active = models.BooleanField(default=True)  # Slot is active by default
 
     def __str__(self):
-        return f"{self.start_time} - {self.end_time} (Age: {self.min_age}-{self.max_age})"
+        return f"{self.playground.name} - {self.date} ({self.start_time}-{self.end_time}, {self.age_group})"
 
+    def save(self, *args, **kwargs):
+        if self.max_positions is None:
+            self.max_positions = 34  # Set a default value for max_positions
+        if self.available_positions is None:
+            self.available_positions = self.max_positions  # Default to max positions initially
+        super(TimeSlot, self).save(*args, **kwargs)
 
-
-# class TimeSlot(models.Model):
-#     slot_time = models.CharField(max_length=100)
-#     start_time = models.TimeField(null=False) 
-#     end_time = models.TimeField(null=False) 
-#     age_group_min = models.PositiveIntegerField(null=False) 
-#     age_group_max = models.PositiveIntegerField(null=False) 
-#     is_active = models.BooleanField(default=True)
-#     total_positions = models.PositiveIntegerField(default=17)
-#     max_users_per_position = models.PositiveIntegerField(default=2)
-#     booked_positions = models.PositiveIntegerField(default=0)
-
-#     def save(self, *args, **kwargs):
-#         # Automatically mark slot as inactive if all positions are booked
-#         if self.booked_positions >= self.total_positions * self.max_users_per_position:
-#             self.is_active = False
-#         super().save(*args, **kwargs)
-
-#     def __str__(self):
-#         return f"{self.start_time} - {self.end_time}"
-
-
-
-
-# class Position(models.Model):
-#     name = models.CharField(max_length=100)
-#     time_slot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE, related_name="positions")
-#     current_bookings = models.PositiveIntegerField(default=0)
-#     max_bookings = models.PositiveIntegerField(default=2)
-
-#     class Meta:
-#         unique_together = ('name', 'time_slot')    
-
-#     @property
-#     def is_available(self):
-#         return self.current_bookings <= self.max_bookings
-
-#     def book_position(self):
-#         if self.is_available:
-#             self.current_bookings += 1
-#             self.save()
-#         else:
-#             raise ValueError(f"{self.name} is already fully booked for this slot.")
-        
-#     def __str__(self):
-#         return f"{self.name} ({self.time_slot.start_time} - {self.time_slot.end_time})"
+    def book_position(self):
+        if self.available_positions > 0:
+            self.available_positions -= 1
+            if self.available_positions == 0:
+                self.is_active = False  # Deactivate the slot when no positions are available
+            self.save()
+        else:
+            raise ValueError("No available positions left for this slot.")

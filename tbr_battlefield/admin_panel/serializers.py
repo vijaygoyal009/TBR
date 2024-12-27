@@ -1,6 +1,8 @@
 from rest_framework import serializers
-from .models import Playground 
+from .models import Playground , TimeSlot
 from auth_app.models import CustomUser , UserProfile , CoachProfile
+
+
 
 class PlaygroundSerializer(serializers.ModelSerializer):
     class Meta:
@@ -119,3 +121,12 @@ class AdminCoachSerializer(serializers.ModelSerializer):
             representation['bio'] = instance.coach_profile.bio
 
         return representation
+
+
+
+
+
+class TimeSlotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TimeSlot
+        fields = ['id', 'playground', 'date', 'start_time', 'end_time', 'age_group', 'is_active']
