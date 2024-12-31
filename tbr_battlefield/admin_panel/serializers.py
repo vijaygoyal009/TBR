@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Playground , TimeSlot
+from .models import Playground , TimeSlot , Position
 from auth_app.models import CustomUser , UserProfile , CoachProfile
 
 
@@ -124,9 +124,18 @@ class AdminCoachSerializer(serializers.ModelSerializer):
 
 
 
+class PositionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Position
+        fields = ['id', 'role', 'is_booked', 'time_slot']
+
 
 
 class TimeSlotSerializer(serializers.ModelSerializer):
+    positions = PositionSerializer(many=True, read_only=True)  # Nested positions
     class Meta:
         model = TimeSlot
-        fields = ['id', 'playground', 'date', 'start_time', 'end_time', 'age_group', 'is_active']
+        fields = ['id', 'playground', 'date', 'start_time', 'end_time', 'age_group', 'max_positions', 'available_positions', 'is_active', 'positions']
+
+
+

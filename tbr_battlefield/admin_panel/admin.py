@@ -1,5 +1,5 @@
 from django.contrib import admin
-from admin_panel.models import Playground, TimeSlot
+from admin_panel.models import Playground , TimeSlot, Position
 
 @admin.register(Playground)
 class PlaygroundAdmin(admin.ModelAdmin):        
@@ -10,3 +10,5 @@ class PlaygroundAdmin(admin.ModelAdmin):
 @admin.register(TimeSlot)
 class TimeSlotAdmin(admin.ModelAdmin):
     list_display = ['id', 'playground', 'date', 'start_time', 'end_time', 'age_group', 'is_active']
+
+admin.site.register(Position)
