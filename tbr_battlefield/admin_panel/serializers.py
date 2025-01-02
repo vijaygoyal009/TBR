@@ -127,7 +127,7 @@ class AdminCoachSerializer(serializers.ModelSerializer):
 class PositionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Position
-        fields = ['id', 'role', 'is_booked', 'time_slot']
+        fields = '__all__'  # Or specify specific fields like: ['id', 'role', 'is_booked', 'time_slot']
 
 
 

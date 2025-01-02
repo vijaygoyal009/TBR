@@ -1,15 +1,15 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from admin_panel.serializers import PlaygroundSerializer , AdminUserSerializer , AdminCoachSerializer , TimeSlotSerializer
-from admin_panel.models import Playground , TimeSlot , Position
-from auth_app.permissions import IsAdminUser
-from auth_app.models import CustomUser 
 from rest_framework.response import Response
 from datetime import timedelta, time
-from rest_framework.views import APIView
 from django.utils import timezone
 from rest_framework import status
 from django.db import transaction, IntegrityError
+from auth_app.permissions import IsAdminUser
+from rest_framework.views import APIView
+from auth_app.models import CustomUser 
+from admin_panel.serializers import PlaygroundSerializer , AdminUserSerializer , AdminCoachSerializer , TimeSlotSerializer , PositionSerializer
+from admin_panel.models import Playground , TimeSlot , Position
 
 
 
@@ -37,6 +37,7 @@ class AdminCoachViewSet(viewsets.ModelViewSet):
 
 
 class TimeSlotAPIView(APIView):
+
     permission_classes = [IsAdminUser]
 
     def get(self, request, *args, **kwargs):
@@ -182,3 +183,81 @@ class TimeSlotAPIView(APIView):
     #         return Response({"message": "Time slot deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
     #     except TimeSlot.DoesNotExist:
     #         return Response({"error": "TimeSlot not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+
+
+
+class PositionAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request, *args, **kwargs):
+        """
+        Get all positions or a specific position by ID
+        """
+        position_id = kwargs.get('id', None)
+        
+        if position_id:
+            try:
+                position = Position.objects.get(id=position_id)
+            except Position.DoesNotExist:
+                return Response({"error": "Position not found."}, status=404)
+                
+            return Response(PositionSerializer(position).data)
+
+        positions = Position.objects.all()
+        return Response(PositionSerializer(positions, many=True).data)
+
+
+
+    def post(self, request, *args, **kwargs):
+        """
+        Create a new position
+        """
+        data = request.data
+        try:
+            # Ensure the time slot exists
+            time_slot = TimeSlot.objects.get(id=data.get('time_slot'))
+        except TimeSlot.DoesNotExist:
+            return Response({"error": "TimeSlot not found."}, status=404)
+
+        serializer = PositionSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()  # This will save the new position to the database
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+    
+
+    def put(self, request, *args, **kwargs):
+        """
+        Update an existing position
+        """
+        position_id = kwargs.get('id')
+        try:
+            position = Position.objects.get(id=position_id)
+        except Position.DoesNotExist:
+            return Response({"error": "Position not found."}, status=404)
+
+        # Update position data
+        serializer = PositionSerializer(position, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()  # This will save the updated position data
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+
+
+    def delete(self, request, *args, **kwargs):
+        """
+        Delete a position by ID
+        """
+        position_id = kwargs.get('id')
+        try:
+            position = Position.objects.get(id=position_id)
+        except Position.DoesNotExist:
+            return Response({"error": "Position not found."}, status=404)
+
+        position.delete()
+        return Response({"message": "Position deleted successfully."}, status=204)
